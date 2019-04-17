@@ -1,12 +1,24 @@
 ---
+tittle: Análise de vinhos tintos
 output:
+  html_document: 
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    theme: united
   pdf_document: default
-  html_document: default
 ---
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      echo=FALSE, warning=FALSE, message=FALSE)
+```
+
 ANÁLISE DE VINHOS TINTOS por ANDRÉ PEREIRA
 ========================================================
 
-O objetivo deste estudo é descobrir quais atributos mais contribuem para a qualidade do vinho.Vamos estudar as relações entre os atributos visando saber quais combinações devem gerar notas mais altas para o atributo de qualidade.
+
+O objetivo deste estudo é descobrir quais atributos mais contribuem para a qualidade do vinho.Vamos estudar as relações entre os atributos visando saber quais combinações de valores geram vinhos com qualidades superiores.
+
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 # Carregue aqui todos os pacotes utilizados 
@@ -25,6 +37,7 @@ library(scales)
 library(gridExtra)
 library(dplyr)
 library(reshape2)
+
 ```
 
 ```{r echo=FALSE, Load_the_Data}
@@ -36,8 +49,9 @@ wn <- read.csv('wineQualityReds.csv')
 
 Esse arquivo contém 1599 observações com 13 variáveis. Vamos primeiro ver os valores máximos, mínimos, médios e medianos para cada atributo.
 
-## Names e Summary
+## Nomes e Sumário
 ```{r echo=FALSE, Univariate_Plots}
+#Ver os nomes e o sumário com as informações principais
 names(wn)
 summary(wn)
 summary(wn$quality)
@@ -47,15 +61,15 @@ summary(wn$quality)
 ## Distribuição do atributo Qualidade
 
 Agora vamos ver qual a distribuição de cada nota.
-```{r echo=FALSE, Univariate_Plots}
-
+```{r echo=FALSE, distributio_quality}
+# Gráfico que mostra a quantidade de vezes que cada nota foi atribuída
 ggplot(data = wn, aes(x = quality))+
   geom_histogram(color = 'black', fill = 'red',binwidth = 1) + 
   scale_x_continuous(breaks = seq(3,8,1)) +
   xlab('Qualidade') +
   ylab('Quantidade') +
   ggtitle('DISTRIBUIÇÃO DA QUALIDADE') +
-  theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5))
+  theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
 
 ```
 
@@ -69,12 +83,12 @@ Nesta seção iremos trabalhar com gráficos com apenas uma variável isolada e tent
 
 Vamos começar fazendo uma distribuição de cada atribuito em relação a quantidade, para ter uma noção do tipo de distruição(Normal, cauda longa, etc.)
 
-```{r echo=FALSE, Univariate_Plots}
-
+```{r echo=FALSE, distributions}
+#Gráficos semelhantes ao anterior, que mostra a distribuição de valores de cada atributo.
 p1 <- ggplot(data = wn, aes(x = residual.sugar)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = .5) + 
   scale_x_continuous(breaks = seq(0,16,5)) +
-  xlab('Resíduo de açúcar') +
+  xlab('Resíduo de açúcar (g / dm^3)') +
   ylab('Qtde') +
   ggtitle('Distribuição do Resíduo de açúcar') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -84,7 +98,7 @@ p1 <- ggplot(data = wn, aes(x = residual.sugar)) +
 p2 <- ggplot(data = wn, aes(x = fixed.acidity)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = .5) + 
   scale_x_continuous(breaks = seq(4,16,5)) +
-  xlab('Acidez Fixa') +
+  xlab('Acidez Fixa (g / dm^3)') +
   ylab('Qtde') +
   ggtitle('Distribuição da Acidez Fixa') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -94,7 +108,7 @@ p2 <- ggplot(data = wn, aes(x = fixed.acidity)) +
 p3 <- ggplot(data = wn, aes(x = volatile.acidity)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = .05) + 
   scale_x_continuous(breaks = seq(0,1.6,.5)) +
-  xlab('Acidez Volátil') +
+  xlab('Acidez Volátil (g / dm^3)') +
   ylab('Qtde') +
   ggtitle('Distribuição da Acidez Volátil') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -104,7 +118,7 @@ p3 <- ggplot(data = wn, aes(x = volatile.acidity)) +
 p4 <- ggplot(data = wn, aes(x = citric.acid)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = .05) + 
   scale_x_continuous(breaks = seq(0,1)) +
-  xlab('Ácido Cítrico') +
+  xlab('Ácido Cítrico (g / dm^3)') +
   ylab('Qtde') +
   ggtitle('Distribuição do Ácido Cítrico') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -114,7 +128,7 @@ p4 <- ggplot(data = wn, aes(x = citric.acid)) +
 p5 <- ggplot(data = wn, aes(x = chlorides)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = .05) + 
   scale_x_continuous(breaks = seq(0,.7, 0.2)) +
-  xlab('Cloretos') +
+  xlab('Cloretos (g / dm^3)') +
   ylab('Qtde') +
   ggtitle('Distribuição de Cloretos') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -124,7 +138,7 @@ p5 <- ggplot(data = wn, aes(x = chlorides)) +
 p6 <- ggplot(data = wn, aes(x = free.sulfur.dioxide)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = 4) + 
   scale_x_continuous(breaks = seq(0,72,20)) +
-  xlab('Dióxido de enxofre livre') +
+  xlab('Dióxido de enxofre livre (mg / dm^3)') +
   ylab('Qtde') +
   ggtitle('Distribuição de Dióxido de enxofre livre') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -134,7 +148,7 @@ p6 <- ggplot(data = wn, aes(x = free.sulfur.dioxide)) +
 p7 <- ggplot(data = wn, aes(x = total.sulfur.dioxide)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = 10) + 
   scale_x_continuous(breaks = seq(0,289,50)) +
-  xlab('Dióxido de enxofre total') +
+  xlab('Dióxido de enxofre total (g / dm^3)') +
   ylab('Qtde') +
   ggtitle('Distribuição de Dióxido de enxofre total') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -144,7 +158,7 @@ p7 <- ggplot(data = wn, aes(x = total.sulfur.dioxide)) +
 p8 <- ggplot(data = wn, aes(x = density)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = .0005) + 
   scale_x_continuous(breaks = seq(0.0099, 1.0037)) +
-  xlab('Densidade') +
+  xlab('Densidade (g / dm^3)') +
   ylab('Qtde') +
   ggtitle('Distribuição da Densidade') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -155,7 +169,7 @@ p8 <- ggplot(data = wn, aes(x = density)) +
 p9 <- ggplot(data = wn, aes(x = pH)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = .1) + 
   scale_x_continuous(breaks = seq(2,4.5,.5)) +
-  xlab('pH') +
+  xlab('pH (g / dm^3)') +
   ylab('Qtde') +
   ggtitle('Distribuição do pH') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -165,7 +179,7 @@ p9 <- ggplot(data = wn, aes(x = pH)) +
 p10 <- ggplot(data = wn, aes(x = sulphates)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = .05) + 
   scale_x_continuous(breaks = seq(0.33,2,.5)) +
-  xlab('Sulfatos') +
+  xlab('Sulfatos (g / dm^3)') +
   ylab('Qtde') +
   ggtitle('Distribuição dos sulfatos') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -175,7 +189,7 @@ p10 <- ggplot(data = wn, aes(x = sulphates)) +
 p11 <- ggplot(data = wn, aes(x = alcohol)) +
   geom_histogram(color = 'black', fill = 'red',binwidth = .5) + 
   scale_x_continuous(breaks = seq(8,16,2)) +
-  xlab('Álcool') +
+  xlab('Álcool(%)') +
   ylab('Qtde') +
   ggtitle('Distribuição da Álcool') +
   theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5),
@@ -191,7 +205,8 @@ grid.arrange(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11, ncol = 3)
 
 Como nosso objetivo é saber atráves desses dados é saber qual elemento químico mais influencia na qualidade do vinho, vamos calcular correlações entre os atributos, para ver o que podemos tirar disso.
 
-```{r echo=FALSE, Outliers}
+```{r echo=FALSE, correlations}
+#Calculo da correlações entre os atributos dado com a função ggpairs
 ggpairs(wn,
         colour = "cyl",
         upper = list(continuous = wrap("cor", size=2)))
@@ -201,7 +216,8 @@ ggpairs(wn,
 
 ## Analisando as correlações
 
-```{r echo=FALSE, Outliers}
+```{r echo=FALSE, COrrelations_2}
+# Cálculo das correlações entre qualidade e outros atributos, utilizando a função cor.test
 cor.test(wn$quality, wn$fixed.acidity, method = 'pearson')
 cor.test(wn$quality, wn$volatile.acidity, method = 'pearson')
 cor.test(wn$quality, wn$citric.acid, method = 'pearson')
@@ -230,9 +246,10 @@ Apartir de agora vamos focar nesses 3 atributos, tentando desvendar suas relaçõe
 Antes de iniciar novas análises, vamos remover os outliers desses 3 atributos, visando retirar os pontos que podem atrapalhar as análises.
 
 Vamos novamente sumarizar para ver a diferença de valores com a primeira vez que utilizamos o sumary().
+***Rode apenas uma vez!
 
-## Rode apenas uma vez!
 ```{r echo=FALSE, Outliers}
+# Lidando com os outliers dos atributos de maior correlação
 outliers_alcool <- boxplot(wn$alcohol, plot=FALSE)$out
 wn <- wn[-which(wn$alcohol %in% outliers_alcool),]
 
@@ -242,6 +259,7 @@ wn <- wn[-which(wn$sulphates %in% outliers_sulphates),]
 outliers_volacid <- boxplot(wn$volatile.acidity, plot=FALSE)$out
 wn <- wn[-which(wn$volatile.acidity %in% outliers_volacid),]
 
+#Sumarizar novamente os dados, e comparar com o primeiro resltado
 summary(wn)
 ```
 
@@ -278,22 +296,23 @@ Agora iremos trabalhar com gráficos que trabalham com duas variáveis, queremos a
 Vamos começar com um gráfico de pontos, olhando a distribuição entre o atributo e a qualidade, e vamos inserir uma linha linear.
 
 ```{r echo=FALSE, Bivariate_Plots}
+#Gráfico de pontos, mostando a tendência de cada atributo agora não mais de maneira isolada, e sim junto ao atributo da qualidade
 p1 <- ggplot(data = wn, aes(x = alcohol, y = quality)) +
   geom_point(size = 3,alpha = 1/8) +
   geom_smooth(method = lm) +
-  ggtitle('Álcool x Qualidade') +
+  ggtitle('Álcool(%) x Qualidade') +
 theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5))
 
 p2 <- ggplot(data = wn, aes(x = volatile.acidity, y = quality)) +
   geom_point(size = 3,alpha = 1/8) +
   geom_smooth(method = lm) +
-  ggtitle('Ácidez Volátil x Qualidade') +
+  ggtitle('Ácidez Volátil (g / dm^3) x Qualidade') +
 theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5))
 
 p3 <- ggplot(data = wn, aes(x = sulphates, y = quality)) +
   geom_point(size = 3,alpha = 1/8) +
   geom_smooth(method = lm) +
-  ggtitle('Sulpatos x Qualidade') +
+  ggtitle('Sulpatos (g / dm^3) x Qualidade') +
 theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5))
 
 grid.arrange(p1,p2,p3, ncol = 2)
@@ -301,74 +320,88 @@ grid.arrange(p1,p2,p3, ncol = 2)
 
 Apesar de ser possível vermos algumas relações, vamos tetnar trabalhar com boxplots, que devem nos dar uma melhor visualização.
 
-# Qualidade categorizado
+## Qualidade categorizado
 
 Vamos criar uma nova variável para separar por categorias, para poder criar boxplots.
-```{r echo=FALSE}
+```{r echo=FALSE, labels}
+# Vammos criar categorias para cada nota da qualidade, para podermos criar boxplots, com o uso do cut
 wn$labels<-cut(wn$quality, 
                           c(2.5,3.5,4.5,5.5,6.5,7.5,8.5),
                           labels=c('3','4','5','6','7','8'))
 head(wn$labels)
 ```
 
-# Boxplots com os principais atributos
+## Boxplots com os principais atributos
 
 Os três principais atributos, vamos criar box plots relacionando as notas com os valores de cada atributo, para vermos se encontramos algum padão com as alterações dos valores.
 
-```{r echo=FALSE}
+```{r echo=FALSE, boxplots}
+#Criação de boxplots, para termos outra visualização
 p1 <- ggplot(wn, 
        aes(x=labels, y=alcohol,fill=labels)) + 
-       geom_boxplot()
+       geom_boxplot(aes()) + 
+         ylab("Alcool(%)")
+      
 
 p2 <- ggplot(wn, 
        aes(x=labels, y= volatile.acidity,fill=labels)) + 
-       geom_boxplot()
+       geom_boxplot(aes()) +
+         ylab("Acidez Volátil(g / dm^3)")
+       
 
 p3 <- ggplot(wn, 
        aes(x=labels, y=sulphates,fill=labels)) + 
-       geom_boxplot()
+       geom_boxplot(aes()) +
+         ylab("Sulfatos(g / dm^3)")
+       
 
 grid.arrange(p1,p2,p3, ncol = 2)
 ```
 
 COm esses gráficos, podemos ver um certo padrão, principalmente na acidez volátil, onde a qualidade é inversamente proporcional ao valor desse atributo.
 
-# Driagramas de desidade.
+## Driagramas de desidade.
 
 Vamos tentar também ver esses dados pela densidade, relaionando aqualidade com o atributo. Vamos comerçar fazendo com o atributo  "Alcool".
 
-```{r echo=FALSE}
-
+```{r echo=FALSE, diagrams}
+# Terceiro tipo de visualização, agora utilizando gráficos de densidade, nesse caso para o Alcool
 ggplot(wn, aes(x=alcohol, fill=labels)) +
       geom_density(aes(y=..density..),binwidth=.5, 
-                  alpha=.5, position="identity")
+                  alpha=.5, position="identity")+
+  xlab('alcool(%)')
 ```
 
-# Criação de categorias para as notas
+## Criação de categorias para as notas
 
 No primeiro plot, dada a quantidade alta de notas o gráfica se torna confuso, e ficaria mais visível as relações se agrupassemos as notas em menos categorias. Para isso vamos dividir as 6 notas em apenas 3 notas, sendo elas "Baixa", "Média", "Alta".
 
-```{r echo=FALSE}
+```{r echo=FALSE, notas}
 
-
+#Categoriar novamente as notas, mas agora como BAixa, Média ou Alta
 wn$nota<-cut(wn$quality, c(2.5,4.5,6.5,8.5),
                    labels=c('Baixa','Média','Alta'))
 ```
 
-# Diagras de densidade com menos categorias para qualidade
+## Diagras de densidade com menos categorias para qualidade
 
-```{r echo=FALSE}
+```{r echo=FALSE,diagrams_2}
+
+#Criação de Gráficos para os trÊs atributos
 p1 <- ggplot(wn, aes(x=alcohol, fill=nota)) +
       geom_density(aes(y=..density..),binwidth=.5, 
-                  alpha=.5, position="identity")
+                  alpha=.5, position="identity") +
+  ylab("alcool(%)")
 
 p2 <- ggplot(wn, aes(x=volatile.acidity, fill=nota)) +
       geom_density(aes(y=..density..),binwidth=.5, 
-                  alpha=.5, position="identity")
+                  alpha=.5, position="identity") +
+  ylab("volatile.acidity(g / dm^3)")
 
 p3 <- ggplot(wn, aes(x=sulphates, fill=nota)) +
       geom_density(aes(y=..density..),binwidth=.5, 
-                  alpha=.5, position="identity")
+                  alpha=.5, position="identity") +
+  ylab("sulphates(g / dm^3)")
 
 grid.arrange(p1,p2, p3, ncol = 1)
 ```
@@ -395,20 +428,20 @@ O relaciomaneto mais forte foi com o Alcool.
 Nestes 2 primeiros gráficos vamos verificar a relação do álcool, que já vimos ser o principal atributo relacionado a qualidade, mas adicionando uma nova variável a cada gráfico.
 
 ```{r echo=FALSE, Multivariate_Plots}
-
+#Distribuição das notas correlacionando Alcool com acidez Volátil
 ggplot(wn, aes(x=alcohol,y=volatile.acidity)) +
       geom_point(aes(shape=nota, color = nota, size = nota),alpha=1/4, size = 2)+
-      xlab("Alcool") + ylab("Acidez Volátil") +
+      xlab("alcohol(%)") + ylab("volatile.acidity(g / dm^3)") +
       ggtitle('Alcool x Acidez Volátil x Nota') + 
       theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5))
 
 ```
 
-```{r echo=FALSE, Multivariate_Plots}
-
+```{r echo=FALSE, Multivariate_Plots_2}
+#Distribuição das notas correlacionando Alcool com Sulfatos
 ggplot(wn, aes(x=alcohol,y=sulphates)) +
       geom_point(aes(shape=nota, color = nota, size = nota),alpha=1/4, size = 2)+
-      xlab("Alcool") + ylab("Sulfatos") +
+      xlab("alcohol(%)") + ylab("sulphates(g / dm^3)") +
       ggtitle('Alcool x Sulfatos x Nota') + 
       theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5))
 
@@ -420,11 +453,11 @@ Com essas relações podemos levantar novas suposições, é visível que no primeiro 
 
 Agora podemos realizar esses mesmos estudos, mas utilizando as duas variáveis como princupal, vamos começar pela acidez volátil
 
-```{r echo=FALSE, Multivariate_Plots}
-
+```{r echo=FALSE, Multivariate_Plots_3}
+#Distribuição das notas correlacionando Sulfatos com Acidez Volátil
 ggplot(wn, aes(x=volatile.acidity,y=sulphates)) +
       geom_point(aes(shape=nota, color = nota, size = nota),alpha=1/4, size = 2)+
-      xlab("Acidez Volátil") + ylab("Sulfatos") +
+      xlab("volatile.acidity(g / dm^3)") + ylab("sulphates(g / dm^3)") +
       ggtitle('Acidez Volátil x Sulfatos x Nota') + 
       theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5))
 
@@ -469,17 +502,21 @@ O primeiro gráfico se limita a contar quantos vinhos foram classificados com cad
 ### Segundo Gráfico
 ```{r echo=FALSE, Plot_Two}
 
+#Criação de Gráficos para os trÊs atributos
 p1 <- ggplot(wn, aes(x=alcohol, fill=nota)) +
       geom_density(aes(y=..density..),binwidth=.5, 
-                  alpha=.5, position="identity")
+                  alpha=.5, position="identity") +
+  ylab("alcool(%)")
 
 p2 <- ggplot(wn, aes(x=volatile.acidity, fill=nota)) +
       geom_density(aes(y=..density..),binwidth=.5, 
-                  alpha=.5, position="identity")
+                  alpha=.5, position="identity") +
+  ylab("volatile.acidity(g / dm^3)")
 
 p3 <- ggplot(wn, aes(x=sulphates, fill=nota)) +
       geom_density(aes(y=..density..),binwidth=.5, 
-                  alpha=.5, position="identity")
+                  alpha=.5, position="identity") +
+  ylab("sulphates(g / dm^3)")
 
 grid.arrange(p1,p2, p3, ncol = 1)
 
@@ -495,19 +532,19 @@ NEste gráfico estudamos as desidades referentes a quantidade de cada atributo, e
 
 p1 <- ggplot(wn, aes(x=alcohol,y=volatile.acidity)) +
       geom_point(aes(shape=nota, color = nota, size = nota),alpha=1/4, size = 2)+
-      xlab("Alcool") + ylab("Acidez Volátil") +
-      ggtitle('Alcool x Acidez Volátil x Nota') + 
+      xlab("Alcool (") + ylab("Acidez Volátil") +
+      ggtitle('Alcool(%) x Acidez Volátil(g / dm^3) x Nota') + 
       theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5))
 
 p2 <- ggplot(wn, aes(x=alcohol,y=sulphates)) +
       geom_point(aes(shape=nota, color = nota, size = nota),alpha=1/4, size = 2)+
-      xlab("Alcool") + ylab("Sulfatos") +
+      xlab("Alcool(%)") + ylab("Sulfatos(g / dm^3)") +
       ggtitle('Alcool x Sulfatos x Nota') + 
       theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5))
 
 p3 <- ggplot(wn, aes(x=volatile.acidity,y=sulphates)) +
       geom_point(aes(shape=nota, color = nota, size = nota),alpha=1/4, size = 2)+
-      xlab("Acidez Volátil") + ylab("Sulfatos") +
+      xlab("Acidez Volátil(g / dm^3)") + ylab("Sulfatos(g / dm^3)") +
       ggtitle('Acidez Volátil x Sulfatos x Nota') + 
       theme(plot.title = element_text(size = 10, face = "bold", hjust = 0.5))
 
@@ -522,5 +559,11 @@ Nestes gráficos buscamos visualizar uma correção entre dois atributos, para busc
 ------
 
 # Reflexão
+
+É interessante ver como mesmo em um estudo em que meu conhecimento prévio era quase nulo, foi possível trabalhar nesses dados e extrair informações valiosas. O vinho é uma bebida complexa, com diversas características que podem afetar a preferência do consumidor. A aparência, corpo, aroma, são outros pontos que podem influenciar na qualidade e aceitação do produto. 
+Então busquei aqui procurar onde se concentravam as maiores notas, relacionando os atributos e fazendo hipóteses do que daria ou não uma melhor visualização. Tive algumas dificuldades em desenvolver o estudo por não saber qual caminho trilhar, quais hipóteses iniciais usar e quais gráficos dariam uma melhor visualização, mas isso foi sendo revisto para chegar num nível adequado. Com a linguagem R, me vi com dificuldades para personalizar o gráfico da maneira que imagiei, sem que ficasse com letras muito grades ou pequenas, ou informações dobrepostas e bagunçadas. Queria que ficasse o máximo visível e simples possível. 
+Para o futuro seria interessante estudar a qualidade de outros tipos de alimentos ou bebidas, como cervejas por exemplo.
+
+
 
 
